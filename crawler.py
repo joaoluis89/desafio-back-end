@@ -37,22 +37,39 @@ class FeedItem(object):
 
     def addDescription(self, content):
         soup = BeautifulSoup(str(content), 'lxml')
-        #  texts = [ (s.findAll(text=True)) for s in soup.findAll('p')]
-        #  for rawText in texts:
-        #      textDescriptionObject = Text()
-        #      textDescriptionObject.addContent(rawText)
-        #      self.descriptions.append(textDescriptionObject)
-        
+        self.setTextDescription(soup)
+        self.setImageDescription(soup)
+        self.setLinkDescription(soup)
+        for descriptionObject in self.descriptions:
+            print(descriptionObject.getContent())
+            pass
+        return self
+
+    def setTextDescription(self, soup):
+        texts = [(s.findAll(text=True)) for s in soup.findAll('p')]
+        for rawText in texts:
+            textDescriptionObject = Text()
+            textDescriptionObject.addContent(rawText)
+            self.descriptions.append(textDescriptionObject)
+        return
+
+    def setImageDescription(self, soup):
         images = soup.findAll('img')
-        print(images)
-        # for rawImage in images:
-        #     imageDescriptionObject = Image()
-        #     imageDescriptionObject.addContent(rawImage)
-        #     self.descriptions.append(imageDescriptionObject)
-        # for descriptionObject in self.descriptions:
-        #     print(descriptionObject.getContent())
-        #     pass
-        # return self
+        for img in images:
+            imageDescriptionObject = Image()
+            imageDescriptionObject.addContent(img.get('src'))
+            self.descriptions.append(imageDescriptionObject)
+        return
+
+    def setLinkDescription(self, soup):
+        links = [(s.findAll('a')) for s in soup.findAll('li')]
+        print(links)
+        for link in links:
+            linkDescriptionObject = Link()
+            linkDescriptionObject.addContent(link[0].get('href'))
+            self.descriptions.append(linkDescriptionObject)
+        return
+
 
 
 class FeedItemDescription(object):
