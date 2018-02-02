@@ -168,8 +168,7 @@ class FeedFactory(object):
             feedItem['item']['description'] = description
             feedCollection.append(feedItem)
         feedToJson['feed'] = feedCollection
-        print(json.dumps(feedToJson, indent=4, ensure_ascii=False))
-        return
+        return json.dumps(feedToJson, indent=4, ensure_ascii=False)
 
 
 class Crawler(object):
@@ -183,10 +182,18 @@ class Crawler(object):
         return rawFeed
 
 
-def main():
-    getter = FeedGetter()
-    rawFeed = getter.getFeed('http://revistaautoesporte.globo.com/rss/ultimas/feed.xml')
-    feed = FeedFactory.getFeed(rawFeed)
-    FeedFactory.FeedToJson(feed)
+class CrawlerResponse(object):
+    """docstring for response """
+    def __init__(self):
+        super(CrawlerResponse , self).__init__()
 
-main()
+    def getResponse(self):
+        getter = FeedGetter()
+        rawFeed = getter.getFeed('http://revistaautoesporte.globo.com/rss/ultimas/feed.xml')
+        feed = FeedFactory.getFeed(rawFeed)
+        return FeedFactory.FeedToJson(feed)
+
+
+if __name__ == '__main__':
+    resp = CrawlerResponse()
+    print(resp.getResponse())
