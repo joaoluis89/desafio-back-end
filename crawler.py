@@ -160,10 +160,10 @@ class FeedFactory(object):
         for item in feed:
             description = []
             for row in item.getDescriptions():
-                description.append({
-                    'type': row.getType(),
-                    'content': row.getContent()
-                })
+                auxDicinary = OrderedDict()
+                auxDicinary['type'] = row.getType()
+                auxDicinary['content'] = row.getContent()
+                description.append(auxDicinary)
             feedItem = OrderedDict()
             feedItem['item'] = OrderedDict()
             feedItem['item']['title'] = item.getTitle()
@@ -186,7 +186,10 @@ class Crawler(object):
         return rawFeed
 
 
-getter = FeedGetter()
-rawFeed = getter.getFeed('http://revistaautoesporte.globo.com/rss/ultimas/feed.xml')
-feed = FeedFactory.getFeed(rawFeed)
-FeedFactory.FeedToJson(feed)
+def main():
+    getter = FeedGetter()
+    rawFeed = getter.getFeed('http://revistaautoesporte.globo.com/rss/ultimas/feed.xml')
+    feed = FeedFactory.getFeed(rawFeed)
+    FeedFactory.FeedToJson(feed)
+
+main()
