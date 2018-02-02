@@ -1,6 +1,7 @@
 import re
 import feedparser
 import json
+from collections import OrderedDict
 from bs4 import BeautifulSoup
 # We are going to create a class called LinkParser that inherits some
 # methods from HTMLParser which is why it is passed into the definition
@@ -19,9 +20,14 @@ class Feed(object):
         feedItem = FeedItem(item.title, item.link)
         feedItem.addDescription(item.summary)
 
-        #  print(re.findall(r'\w+', txt))
         self.itens.append(feedItem)
         return self
+
+    def __iter__(self):
+        return iter(self.getItens())
+
+    def __next__(self):
+        return next(self.getItens())
 
 
 class FeedItem(object):
@@ -32,16 +38,23 @@ class FeedItem(object):
         self.link = link
         self.descriptions = []
 
+    def getTitle(self):
+        return self.title
+
+    def getLink(self):
+        return self.link
+
     def getDescriptions(self):
         return self.descriptions
 
     def addDescription(self, content):
+        # print (content)
         soup = BeautifulSoup(str(content), 'lxml')
         self.setTextDescription(soup)
         self.setImageDescription(soup)
         self.setLinkDescription(soup)
         for descriptionObject in self.descriptions:
-            print(descriptionObject.getContent())
+            # print(descriptionObject.getContent())
             pass
         return self
 
@@ -49,8 +62,8 @@ class FeedItem(object):
         texts = [(s.findAll(text=True)) for s in soup.findAll('p')]
         for rawText in texts:
             textDescriptionObject = Text()
-            textDescriptionObject.addContent(rawText)
-            self.descriptions.append(textDescriptionObject)
+            if textDescriptionObject.addContent(rawText):
+                self.descriptions.append(textDescriptionObject)
         return
 
     def setImageDescription(self, soup):
@@ -63,13 +76,11 @@ class FeedItem(object):
 
     def setLinkDescription(self, soup):
         links = [(s.findAll('a')) for s in soup.findAll('li')]
-        print(links)
+        linkDescriptionObject = Link()
         for link in links:
-            linkDescriptionObject = Link()
             linkDescriptionObject.addContent(link[0].get('href'))
-            self.descriptions.append(linkDescriptionObject)
+        self.descriptions.append(linkDescriptionObject)
         return
-
 
 
 class FeedItemDescription(object):
@@ -80,10 +91,13 @@ class FeedItemDescription(object):
 
     def addContent(self, content):
         self.content = ''.join(content)
-        return self
+        return True
 
     def getContent(self):
         return self.content
+
+    def getType(self):
+        return self.type
 
     def __str__(self):
         return self.getContent()
@@ -93,7 +107,11 @@ class Text(FeedItemDescription):
     """docstring for Link"""
     def __init__(self):
         FeedItemDescription.__init__(self, 'text')
-        
+
+    def addContent(self, content):
+        aux = ''.join(content)
+        self.content = ''.join(content)
+        return not (not aux.rstrip())
 
 
 class Image(FeedItemDescription):
@@ -105,7 +123,7 @@ class Image(FeedItemDescription):
 class Link(FeedItemDescription):
     """docstring for Link"""
     def __init__(self):
-        FeedItemDescription.__init__(self, 'link')
+        FeedItemDescription.__init__(self, 'links')
         self.content = []
 
     def addContent(self, content):
@@ -132,9 +150,29 @@ class FeedFactory(object):
     def getFeed(rawFeed):
         feed = Feed()
         for item in rawFeed.entries:
-            feed.addItem(rawFeed.entries[1])
-            return
+            feed.addItem(item)
         return feed
+
+    @staticmethod
+    def FeedToJson(feed):
+        feedToJson = {}
+        feedCollection = []
+        for item in feed:
+            description = []
+            for row in item.getDescriptions():
+                description.append({
+                    'type': row.getType(),
+                    'content': row.getContent()
+                })
+            feedItem = OrderedDict()
+            feedItem['item'] = OrderedDict()
+            feedItem['item']['title'] = item.getTitle()
+            feedItem['item']['link'] = item.getLink()
+            feedItem['item']['description'] = description
+            feedCollection.append(feedItem)
+        feedToJson['feed'] = feedCollection
+        print(json.dumps(feedToJson, indent=4, ensure_ascii=False))
+        return
 
 
 class Crawler(object):
@@ -148,7 +186,7 @@ class Crawler(object):
         return rawFeed
 
 
-feed = Feed()
 getter = FeedGetter()
 rawFeed = getter.getFeed('http://revistaautoesporte.globo.com/rss/ultimas/feed.xml')
-FeedFactory.getFeed(rawFeed)
+feed = FeedFactory.getFeed(rawFeed)
+FeedFactory.FeedToJson(feed)
