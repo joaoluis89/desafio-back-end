@@ -1,3 +1,7 @@
+# Aplicacao flask para webservice de retorno de feeds
+# Author: Joao Pacheco
+# Date: 02/02/2018
+
 from flask_api import FlaskAPI
 from flask_httpauth import HTTPBasicAuth
 from flask import *

@@ -1,3 +1,7 @@
+# Crawler para coleta de feeds
+# Author: Joao Pacheco
+# Date: 02/02/2018
+
 import feedparser
 import json
 from collections import OrderedDict
@@ -5,7 +9,10 @@ from bs4 import BeautifulSoup
 
 
 class Feed(object):
-    """docstring for Feed"""
+    """Feed Class
+        Responsavel pelo nó mais externo da estrutura contruida
+        Representa a pagina de com varias noticias
+    """
     def __init__(self):
         super(Feed, self).__init__()
         self.itens = []
@@ -28,7 +35,7 @@ class Feed(object):
 
 
 class FeedItem(object):
-    """docstring for FeedItem"""
+    """Model que armazena um feed da pagina de feeds"""
     def __init__(self, title, link):
         super(FeedItem, self).__init__()
         self.title = title
@@ -45,14 +52,10 @@ class FeedItem(object):
         return self.descriptions
 
     def addDescription(self, content):
-        # print (content)
         soup = BeautifulSoup(str(content), 'lxml')
         self.setTextDescription(soup)
         self.setImageDescription(soup)
         self.setLinkDescription(soup)
-        for descriptionObject in self.descriptions:
-            # print(descriptionObject.getContent())
-            pass
         return self
 
     def setTextDescription(self, soup):
@@ -81,7 +84,7 @@ class FeedItem(object):
 
 
 class FeedItemDescription(object):
-    """docstring for FeedItemDescription"""
+    """ Modelo que armazena a estrutura basica da descricao de uma noticia"""
     def __init__(self, tagType):
         super(FeedItemDescription, self).__init__()
         self.type = tagType
@@ -101,7 +104,7 @@ class FeedItemDescription(object):
 
 
 class Text(FeedItemDescription):
-    """docstring for Link"""
+    """Modelo que armazena a estrutura especifica do tipo text de uma descricao de uma noticia"""
     def __init__(self):
         FeedItemDescription.__init__(self, 'text')
 
@@ -112,13 +115,13 @@ class Text(FeedItemDescription):
 
 
 class Image(FeedItemDescription):
-    """docstring for Link"""
+    """Modelo que armazena a estrutura especifica do tipo image de uma descricao de uma noticia"""
     def __init__(self):
         FeedItemDescription.__init__(self, 'image')
 
 
 class Link(FeedItemDescription):
-    """docstring for Link"""
+    """Modelo que armazena a estrutura especifica do tipo links de uma descricao de uma noticia"""
     def __init__(self):
         FeedItemDescription.__init__(self, 'links')
         self.content = []
@@ -129,7 +132,7 @@ class Link(FeedItemDescription):
 
 
 class FeedGetter(object):
-    """docstring for FeedGetter"""
+    """Coleta o feed a partir de uma url"""
     def __init__(self):
         super(FeedGetter, self).__init__()
 
@@ -139,7 +142,7 @@ class FeedGetter(object):
 
 
 class FeedFactory(object):
-    """docstring for FeedParser"""
+    """Responsavel pela construcao dos objetos FEED e FEEdTOJSON """
     def __init__(self):
         super(FeedFactory, self).__init__()
 
@@ -172,7 +175,7 @@ class FeedFactory(object):
 
 
 class Crawler(object):
-    """docstring for Crawler"""
+    """Wrapper para execucao do FeedGetter"""
     def __init__(self):
         super(Crawler, self).__init__()
 
@@ -183,7 +186,7 @@ class Crawler(object):
 
 
 class CrawlerResponse(object):
-    """docstring for response """
+    """Realiza a coleta do Feed e a codifica em em algum formato REST """
     def __init__(self):
         super(CrawlerResponse , self).__init__()
 
@@ -194,6 +197,7 @@ class CrawlerResponse(object):
         return FeedFactory.FeedToJson(feed)
 
 
+"""Se for executada via linha de comando, imprime o json resultante na tela"""
 if __name__ == '__main__':
     resp = CrawlerResponse()
     print(resp.getResponse())
