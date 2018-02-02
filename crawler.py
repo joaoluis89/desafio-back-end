@@ -1,10 +1,7 @@
-import re
 import feedparser
 import json
 from collections import OrderedDict
 from bs4 import BeautifulSoup
-# We are going to create a class called LinkParser that inherits some
-# methods from HTMLParser which is why it is passed into the definition
 
 
 class Feed(object):
